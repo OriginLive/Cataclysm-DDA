@@ -408,3 +408,61 @@ TEST_CASE( "lcmatch", "[utility][nogame]" )
     CHECK( lcmatch( "無効", "無" ) == true );
     CHECK( lcmatch( "無効", "無效" ) == false );
 }
+
+TEST_CASE( "obscure_message", "[utility][nogame]" )
+{
+    SECTION( "narrow fixed" ) {
+        std::size_t index = 0;
+        std::string message = "Hello, world!";
+        std::string result = obscure_message( message, [&index]() -> obscure_message_action {
+            if( index++ == 5 )
+            {
+                return replace_character_with{'?'};
+            }
+            return do_not_replace_character{};
+        } );
+        CHECK( result == "Hello? world!" );
+    }
+
+    SECTION( "narrow random" ) {
+        std::size_t index = 0;
+        std::string message = "Hello, world!";
+        std::string result = obscure_message( message, [&index]() -> obscure_message_action {
+            if( index++ == 5 )
+            {
+                return replace_character_randomly{};
+            }
+            return do_not_replace_character{};
+        } );
+        CHECK( utf8_width( result ) == utf8_width( message ) );
+        CHECK( result[5] != ',' );
+    }
+
+    SECTION( "wide fixed" ) {
+        std::size_t index = 0;
+        std::string message = "こんにちは、世界！";
+        std::string result = obscure_message( message, [&index]() -> obscure_message_action {
+            if( index++ == 2 )
+            {
+                return replace_character_with{U'#'};
+            }
+            return do_not_replace_character{};
+        } );
+        CHECK( utf8_width( result ) == utf8_width( message ) );
+        CHECK( result == "こん##ちは、世界！" );
+    }
+
+    SECTION( "wide random" ) {
+        std::size_t index = 0;
+        std::string message = "こんにちは、世界！";
+        std::string result = obscure_message( message, [&index]() -> obscure_message_action {
+            if( index++ == 1 )
+            {
+                return replace_character_randomly{};
+            }
+            return do_not_replace_character{};
+        } );
+        CHECK( utf8_width( result ) == utf8_width( message ) );
+        CHECK( result != message );
+    }
+}

@@ -2011,10 +2011,8 @@ bool inscribe_actor::item_inscription( item &tool, item &cut ) const
     }
 
     if( material_restricted && !cut.made_of_any( material_whitelist ) ) {
-        std::wstring lower_verb = utf8_to_wstr( verb.translated() );
-        std::transform( lower_verb.begin(), lower_verb.end(), lower_verb.begin(), towlower );
         add_msg( m_info, _( "You can't %1$s %2$s because of the material it is made of." ),
-                 wstr_to_utf8( lower_verb ), cut.display_name() );
+                 to_lower_case( verb.translated() ), cut.display_name() );
         return false;
     }
 
